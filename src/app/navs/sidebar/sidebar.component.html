@@ -1,0 +1,41 @@
+<nav class="sidebar sidebar-offcanvas" id="sidebar">
+  <ul class="nav">
+    <ng-container>
+      <li class="nav-item" [ngClass]="{ 'active': dashboard.isActive }">
+        <a class="nav-link" routerLink="/dashboard" routerLinkActive #dashboard="routerLinkActive">
+          <span class="menu-title">Dashboard</span>
+          <i class="mdi mdi-home menu-icon"></i>
+        </a>
+      </li>
+      <li class="nav-item" *ngIf="isAdmin || accessRights.role.id == 1 || accessModules[1]">
+        <a class="nav-link" (click)="userManagement = !userManagement" [attr.aria-expanded]="userManagement"
+          aria-controls="userManagement">
+          <span class="menu-title">User Management</span>
+          <i class="menu-arrow"></i>
+          <i class="mdi mdi-account-multiple"></i>
+        </a>
+        <div class="collapse" id="userManagement" [ngbCollapse]="!userManagement">
+          <ul class="nav flex-column sub-menu">
+            <li class="nav-item" *ngIf="isAdmin || accessRights.role.id == 1 || accessModules[1]"> <a class="nav-link"
+                routerLink="/user-management/user" routerLinkActive="active">Users</a></li>
+          </ul>
+        </div>
+      </li>
+      <li class="nav-item" *ngIf="isAdmin || accessRights.role.id == 1 || accessModules[2]">
+        <a class="nav-link" (click)="employeeManagement = !employeeManagement" [attr.aria-expanded]="employeeManagement"
+          aria-controls="employeeManagement">
+          <span class="menu-title">Employee Management</span>
+          <i class="menu-arrow"></i>
+          <i class="mdi mdi-account-details"></i>
+        </a>
+        <div class="collapse" id="employeeManagement" [ngbCollapse]="!employeeManagement">
+          <ul class="nav flex-column sub-menu">
+            <li class="nav-item" *ngIf="isAdmin || accessRights.role.id == 1 || accessSubModules[2]"> <a
+                class="nav-link" routerLink="/employee-management/employee" routerLinkActive="active">Employee</a>
+            </li>
+          </ul>
+        </div>
+      </li>
+    </ng-container>
+  </ul>
+</nav>

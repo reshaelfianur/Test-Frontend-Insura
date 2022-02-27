@@ -1,0 +1,339 @@
+<div class="page-header">
+    <h3 class="page-title">
+        {{ title }}
+    </h3>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">{{ module }}</li>
+            <li aria-current="page" class="breadcrumb-item active">{{ title }}</li>
+        </ol>
+    </nav>
+</div>
+
+<ngx-spinner></ngx-spinner>
+
+<div class="row d-none" [class.d-block]="!isLockUser">
+    <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <div>
+                    <h4 class="card-title" *ngIf="contents?.length">Data</h4>
+                    <h4 class="card-title text-danger" *ngIf="!isStillLoading && contents?.length == 0">No Data Exists
+                    </h4>
+                    <h4 class="card-title" *ngIf="isStillLoading">Loading... <img
+                            src="https://i.pinimg.com/originals/5f/e0/e5/5fe0e55f8e19bc4cc3201876dce7b224.gif"
+                            height="14px"></h4>
+                    <div>
+                        <label class="mb-0 mr-2 d-inline-block">Show</label>
+                        <select class="select-picker d-inline-block  form-control w-10" id="length-change"
+                            data-style="btn-solid" data-width="80px" (change)="onLength($event)">
+                            <option value="10" selected="selected">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                        <label class="mb-0 ml-2">entries</label>
+                        <span class="float-lg-right">
+                            <div class="form-group d-inline-block mr-2">
+                                <input type="text" id="search" placeholder="Search Name" class="form-control rounded"
+                                    #filter>
+                            </div>
+                            <a class="btn btn-gradient-primary btn-rounded btn-sm" (click)="onAdd(addForm)"
+                                *ngIf="accessRights.role.id == 1 || permission.type == 1">Add New</a>
+                        </span>
+                    </div>
+                </div>
+                <div class="table-responsive" *ngIf="contents?.length">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">
+                                    <span (click)="onSort('employee_code')">Code <i
+                                            *ngIf="tableService.isAscSorted('employee_code')"
+                                            class='mdi mdi-arrow-up-drop-circle text-success'></i><i
+                                            *ngIf="tableService.isDescSorted('employee_code')"
+                                            class='mdi mdi-arrow-down-drop-circle text-info'></i></span>
+                                </th>
+                                <th scope="col">
+                                    <span (click)="onSort('employee_full_name')">Full Name <i
+                                            *ngIf="tableService.isAscSorted('employee_full_name')"
+                                            class='mdi mdi-arrow-up-drop-circle text-success'></i><i
+                                            *ngIf="tableService.isDescSorted('employee_full_name')"
+                                            class='mdi mdi-arrow-down-drop-circle text-info'></i></span>
+                                </th>
+                                <th scope="col">
+                                    <span (click)="onSort('employee_birth_date')">Birth Date <i
+                                            *ngIf="tableService.isAscSorted('employee_birth_date')"
+                                            class='mdi mdi-arrow-up-drop-circle text-success'></i><i
+                                            *ngIf="tableService.isDescSorted('employee_birth_date')"
+                                            class='mdi mdi-arrow-down-drop-circle text-info'></i></span>
+                                </th>
+                                <th scope="col">
+                                    <span (click)="onSort('employee_email_private')">Email <i
+                                            *ngIf="tableService.isAscSorted('employee_email_private')"
+                                            class='mdi mdi-arrow-up-drop-circle text-success'></i><i
+                                            *ngIf="tableService.isDescSorted('employee_email_private')"
+                                            class='mdi mdi-arrow-down-drop-circle text-info'></i></span>
+                                </th>
+                                <th scope="col">
+                                    <span (click)="onSort('group_name')">Group <i
+                                            *ngIf="tableService.isAscSorted('group_name')"
+                                            class='mdi mdi-arrow-up-drop-circle text-success'></i><i
+                                            *ngIf="tableService.isDescSorted('group_name')"
+                                            class='mdi mdi-arrow-down-drop-circle text-info'></i></span>
+                                </th>
+                                <th scope="col">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody *ngIf="!isStillLoading">
+                            <ng-container *ngFor="let row of contents">
+                                <tr (click)="onEdit(editForm, row.employee_id)" class="cursor-pointer">
+                                    <td>{{row.employee_code}}</td>
+                                    <td>{{row.employee_full_name}}</td>
+                                    <td>{{row.employee_birth_date | date: 'dd MMMM yyyy'}}</td>
+                                    <td>{{row.employee_email_private}}</td>
+                                    <td>{{row.group_name}}</td>
+                                    <td>{{row.employee_description | slice:0:25}}...</td>
+                                </tr>
+                            </ng-container>
+                        </tbody>
+                    </table>
+                </div>
+                <br>
+                <ng-container *ngIf="contents?.length">
+                    <ng-container *ngIf="tableService.getNumberOfPages() > 1">
+                        <ngb-pagination [collectionSize]="tableService.documentSize" [(page)]="tableService.pageNumber"
+                            [pageSize]="tableService.pageSize" (pageChange)="onChangePage($event)" [maxSize]="5"
+                            [rotate]="true" [boundaryLinks]="true" class="float-right">
+                        </ngb-pagination>
+                    </ng-container>
+                </ng-container>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ng-template #addForm let-modal>
+    <div class="modal-header">
+        <h5 class="modal-title">Add {{ title }}</h5>
+        <button type="button" class="close" (click)="modal.dismiss()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        <form [formGroup]="addFormGroup" (ngSubmit)="onSaveAdd()">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Employee</h4>
+                    <div class="form-group">
+                        <label class="title-field" for="employee_code">Code</label>
+                        <div class="input-group">
+                            <input id="employee_code" class="form-control" formControlName="employee_code">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="title-field" for="employee_first_name">First Name</label>
+                        <div class="input-group">
+                            <input id="employee_first_name" class="form-control" formControlName="employee_first_name">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="title-field" for="employee_last_name">Last Name</label>
+                        <div class="input-group">
+                            <input id="employee_last_name" class="form-control" formControlName="employee_last_name">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="title-field" for="employee_birth_date">Birth Date</label>
+                        <div class="input-group">
+                            <input id="employee_birth_date" placeholder="yyyy-mm-dd" class="form-control"
+                                formControlName="employee_birth_date" [minDate]="minDate" [maxDate]="maxDate"
+                                #employeeBirthDate="ngbDatepicker" ngbDatepicker>
+                            <span class="input-group-append">
+                                <button style="height: 33px;" class="btn btn-gradient-primary"
+                                    (click)="employeeBirthDate.toggle()" type="button">Select Date</button>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="title-field" for="employee_email_private">Email</label>
+                        <div class="input-group">
+                            <input type="email" id="employee_email_private" class="form-control"
+                                formControlName="employee_email_private">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="title-field" for="group_id">Group</label>
+                        <ng-select class="form-control" id="group_id" formControlName="group_id">
+                            <ng-option *ngFor="let item of groups" [value]="item.group_id">{{item.group_name}}
+                            </ng-option>
+                        </ng-select>
+                    </div>
+                    <div class="form-group">
+                        <label class="title-field" for="employee_basic_salary">Basic Salary</label>
+                        <div class="input-group">
+                            <input type="email" id="employee_basic_salary" class="form-control"
+                                formControlName="employee_basic_salary">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="title-field" for="employee_description">Description</label>
+                        <div class="input-group">
+                            <textarea formControlName="employee_description" class="form-control"
+                                id="employee_description" cols="30" rows="10"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Close</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
+    </div>
+</ng-template>
+
+<ng-template #editForm let-modal>
+    <ng-container *ngIf="viewMode == 'view'">
+        <div class="modal-header">
+            <h5 class="modal-title">View {{ title }}</h5>
+            <button type="button" class="close" (click)="modal.dismiss()" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form [formGroup]="editFormGroup" (ngSubmit)="onSaveEdit()">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Employee</h4>
+                        <div class="form-group">
+                            <label class="title-field">Code</label>
+                            <p class="form-control-static">{{viewContent.employee_code}}</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="title-field">First Name</label>
+                            <p class="form-control-static">{{viewContent.employee_first_name}}</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="title-field">Last Name</label>
+                            <p class="form-control-static">{{viewContent.employee_last_name}}</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="title-field">Birth Date</label>
+                            <p class="form-control-static">{{viewContent.employeeBirthDateView | date: 'dd MMMM yyyy'}}
+                            </p>
+                        </div>
+                        <div class="form-group">
+                            <label class="title-field">Email</label>
+                            <p class="form-control-static">{{viewContent.employee_email_private}}</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="title-field">Group</label>
+                            <p class="form-control-static">{{viewContent.group_name}}</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="title-field">Basic Salary</label>
+                            <p class="form-control-static">{{viewContent.employee_basic_salary | currency:'Rp
+                                ':'symbol':'4.2-2'}}</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="title-field">Description</label>
+                            <p class="form-control-static">{{viewContent.employee_description}}</p>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" formControlName="employee_id">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Close</button>
+                    <button type="button" class="btn btn-warning" (click)="viewMode = 'edit'"
+                        *ngIf="accessRights.role.id == 1 || permission.type == 1">Edit</button>
+                    <button type="button" class="btn btn-danger" (click)="onDelete(viewContent.employee_id)"
+                        *ngIf="accessRights.role.id == 1 || permission.type == 1">Delete</button>
+                </div>
+            </form>
+        </div>
+    </ng-container>
+    <ng-container *ngIf="viewMode == 'edit'">
+        <div class="modal-header">
+            <h5 class="modal-title">Edit {{ title }}</h5>
+            <button type="button" class="close" (click)="modal.dismiss()" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form [formGroup]="editFormGroup" (ngSubmit)="onSaveEdit()">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Employee</h4>
+                        <div class="form-group">
+                            <label class="title-field" for="employee_code">Code</label>
+                            <div class="input-group">
+                                <input id="employee_code" class="form-control" formControlName="employee_code">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="title-field" for="employee_first_name">First Name</label>
+                            <div class="input-group">
+                                <input id="employee_first_name" class="form-control"
+                                    formControlName="employee_first_name">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="title-field" for="employee_last_name">Last Name</label>
+                            <div class="input-group">
+                                <input id="employee_last_name" class="form-control"
+                                    formControlName="employee_last_name">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="title-field" for="employee_birth_date">Birth Date</label>
+                            <div class="input-group">
+                                <input id="employee_birth_date" placeholder="yyyy-mm-dd" class="form-control"
+                                    formControlName="employee_birth_date" [minDate]="minDate" [maxDate]="maxDate"
+                                    #employeeBirthDate="ngbDatepicker" ngbDatepicker>
+                                <span class="input-group-append">
+                                    <button style="height: 33px;" class="btn btn-gradient-primary"
+                                        (click)="employeeBirthDate.toggle()" type="button">Select Date</button>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="title-field" for="employee_email_private">Email</label>
+                            <div class="input-group">
+                                <input type="email" id="employee_email_private" class="form-control"
+                                    formControlName="employee_email_private">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="title-field" for="employee_basic_salary">Basic Salary</label>
+                            <div class="input-group">
+                                <input type="email" id="employee_basic_salary" class="form-control"
+                                    formControlName="employee_basic_salary">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="title-field" for="group_id">Group</label>
+                            <ng-select class="form-control" id="group_id" formControlName="group_id">
+                                <ng-option *ngFor="let item of groups" [value]="item.group_id">{{item.group_name}}
+                                </ng-option>
+                            </ng-select>
+                        </div>
+                        <div class="form-group">
+                            <label class="title-field" for="employee_description">Description</label>
+                            <div class="input-group">
+                                <textarea formControlName="employee_description" class="form-control"
+                                    id="employee_description" cols="30" rows="10"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" formControlName="employee_id">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Close</button>
+                    <button type="button" class="btn btn-secondary" (click)="onBack('view')">View</button>
+                    <button type="submit" class="btn btn-warning">Save</button>
+                </div>
+            </form>
+        </div>
+    </ng-container>
+</ng-template>

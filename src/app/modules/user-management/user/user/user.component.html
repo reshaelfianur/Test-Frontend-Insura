@@ -1,0 +1,255 @@
+<div class="page-header">
+    <h3 class="page-title">
+        {{ title }}
+    </h3>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">{{ module }}</li>
+            <li aria-current="page" class="breadcrumb-item active">{{ title }}</li>
+        </ol>
+    </nav>
+</div>
+
+<ngx-spinner></ngx-spinner>
+
+<div class="row" *ngIf="!isLockUser">
+    <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <span>
+                    <span class="float-lg-right">
+                        <a class="btn btn-gradient-primary btn-rounded btn-sm" (click)="onAdd(addForm)"
+                            *ngIf="accessRights.role.id == 1 || permission.type == 1">Add New</a>
+                    </span>
+                    <h4 class="card-title" *ngIf="contents?.length">Data</h4>
+                    <h4 class="card-title text-danger" *ngIf="!isStillLoading && contents?.length == 0">No Data Exists
+                    </h4>
+                    <h4 class="card-title" *ngIf="isStillLoading">Loading... <img
+                            src="https://i.pinimg.com/originals/5f/e0/e5/5fe0e55f8e19bc4cc3201876dce7b224.gif"
+                            height="14px"></h4>
+                </span>
+                <div class="table-responsive pt-3" *ngIf="contents?.length">
+                    <table class="table table-hover" datatable [dtOptions]="dtOptions">
+                        <thead>
+                            <tr>
+                                <th scope="col">Email</th>
+                                <th scope="col">Username</th>
+                                <th scope="col">Full Name</th>
+                                <th scope="col">Active Date</th>
+                                <th scope="col">Inactive Date</th>
+                            </tr>
+                        </thead>
+                        <tbody *ngIf="!isStillLoading">
+                            <ng-container *ngFor="let row of contents">
+                                <tr (click)="onEdit(editForm, row.user_id)">
+                                    <td>{{row.email}}</td>
+                                    <td>{{row.username}}</td>
+                                    <td>{{row.user_full_name}}</td>
+                                    <td>{{row.user_active_date | date: 'dd MMMM yyyy'}}</td>
+                                    <td>{{row.user_inactive_date | date: 'dd MMMM yyyy'}}</td>
+                                </tr>
+                            </ng-container>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ng-template #addForm let-modal>
+    <div class="modal-header">
+        <h5 class="modal-title">Add {{ title }}</h5>
+        <button type="button" class="close" (click)="modal.dismiss()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        <form [formGroup]="addFormGroup" (ngSubmit)="onSaveAdd()">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h4 class="card-title">Users</h4>
+                    <div class="form-group">
+                        <label class="title-field" for="email">Email</label>
+                        <div class="input-group">
+                            <input id="email" class="form-control" formControlName="email">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="title-field" for="username">Username</label>
+                        <div class="input-group">
+                            <input id="username" class="form-control" formControlName="username">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="title-field" for="user_full_name">Full Name</label>
+                        <div class="input-group">
+                            <input id="user_full_name" class="form-control" formControlName="user_full_name">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="title-field" for="user_active_date">Active Date</label>
+                        <div class="input-group">
+                            <input id="user_active_date" type="date" class="form-control"
+                                formControlName="user_active_date">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="title-field" for="user_inactive_date">In Active Date</label>
+                        <div class="input-group">
+                            <input id="user_inactive_date" type="date" class="form-control"
+                                formControlName="user_inactive_date">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Password</h4>
+                    <div class="form-group">
+                        <label for="password">New Password</label>
+                        <input type="password" id="password" placeholder="New Password" class="form-control"
+                            formControlName="password">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm Password</label>
+                        <input type="password" id="confirm_password" placeholder="Confirm Password" class="form-control"
+                            formControlName="confirm_password">
+                        <span *ngIf="addFormGroup.errors?.notConfirmed" class="text-danger text-sm-left">
+                            Password doesn't match
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Close</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
+    </div>
+</ng-template>
+
+<ng-template #editForm let-modal>
+    <ng-container *ngIf="viewMode == 'view'">
+        <div class="modal-header">
+            <h5 class="modal-title">View {{ title }}</h5>
+            <button type="button" class="close" (click)="modal.dismiss()" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form [formGroup]="editFormGroup" (ngSubmit)="onSaveEdit()">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Users</h4>
+                        <div class="form-group">
+                            <label class="title-field">Email</label>
+                            <p class="form-control-static">{{viewContent.email}}</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="title-field">Username</label>
+                            <p class="form-control-static">{{viewContent.username}}</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="title-field">Full Name</label>
+                            <p class="form-control-static">{{viewContent.user_full_name}}</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="title-field">Active Date</label>
+                            <p class="form-control-static">{{viewContent.user_active_date | date: 'dd MMMM yyyy' }}</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="title-field">In Active Date</label>
+                            <p class="form-control-static">{{viewContent.user_inactive_date | date: 'dd MMMM yyyy'}}</p>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" formControlName="user_id">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Close</button>
+                    <button type="button" class="btn btn-primary" (click)="viewMode = 'edit'"
+                        *ngIf="accessRights.role.id == 1 || permission.type == 1 || accessRights.user.user_id == viewContent.user_id">Edit</button>
+                    <button type="button" class="btn btn-danger" (click)="onDelete(viewContent.user_id)"
+                        *ngIf="accessRights.role.id == 1 || permission.type == 1">Delete</button>
+                </div>
+            </form>
+        </div>
+    </ng-container>
+    <ng-container *ngIf="viewMode == 'edit'">
+        <div class="modal-header">
+            <h5 class="modal-title">Edit {{ title }}</h5>
+            <button type="button" class="close" (click)="modal.dismiss()" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form [formGroup]="editFormGroup" (ngSubmit)="onSaveEdit()">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h4 class="card-title">Users</h4>
+                        <div class="form-group">
+                            <label class="title-field" for="email">Email</label>
+                            <div class="input-group">
+                                <input id="email" class="form-control" formControlName="email">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="title-field" for="username">Username</label>
+                            <div class="input-group">
+                                <input id="username" class="form-control" formControlName="username">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="title-field" for="user_full_name">Full Name</label>
+                            <div class="input-group">
+                                <input id="user_full_name" class="form-control" formControlName="user_full_name">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="title-field" for="user_active_date">Active Date</label>
+                            <div class="input-group">
+                                <input id="user_active_date" type="date" class="form-control"
+                                    formControlName="user_active_date">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="title-field" for="user_inactive_date">In Active Date</label>
+                            <div class="input-group">
+                                <input id="user_inactive_date" type="date" class="form-control"
+                                    formControlName="user_inactive_date">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="alert alert-fill-primary" role="alert">
+                            <i class="mdi mdi-information-outline"></i>Leave the password blank if you don't want to
+                            change it.
+                        </div>
+                        <h4 class="card-title">Password</h4>
+                        <div class="form-group">
+                            <label for="password">New Password</label>
+                            <input type="password" id="password" placeholder="New Password" class="form-control"
+                                formControlName="password">
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm_password">Confirm Password</label>
+                            <input type="password" id="confirm_password" placeholder="Confirm Password"
+                                class="form-control" formControlName="confirm_password">
+                            <span *ngIf="editFormGroup.errors?.notConfirmed" class="text-danger text-sm-left">
+                                Password doesn't match
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" formControlName="user_id">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Close</button>
+                    <button type="button" class="btn btn-secondary" (click)="onBack('view')">View</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </ng-container>
+</ng-template>
